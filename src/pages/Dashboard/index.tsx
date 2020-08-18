@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Image, ScrollView } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
@@ -61,9 +61,19 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     async function loadFoods(): Promise<void> {
       // Load Foods from API
-      const response = await api.get('/foods');
 
+      const response = await api.get('/foods');
       setFoods(response.data);
+
+      // if (selectedCategory) {
+      //   const responseCategory = await api.get(`/foods/${selectedCategory}`);
+      //   // setFoods(responseCategory.data);
+      //   console.log(responseCategory.data);
+      // }
+
+      // if (searchValue) {
+
+      // }
     }
 
     loadFoods();

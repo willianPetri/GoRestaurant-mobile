@@ -57,6 +57,7 @@ interface Food {
   price: number;
   image_url: string;
   formattedPrice: string;
+  favorite: boolean;
   extras: Extra[];
 }
 
@@ -73,30 +74,55 @@ const FoodDetails: React.FC = () => {
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
-      // Load a specific food with extras based on routeParams id
+      const response = await api.get(`foods/${routeParams.id}`);
+
+      setFood(response.data);
+
+      setExtras(response.data.extras);
     }
 
     loadFood();
   }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
-    // Increment extra quantity
+    const newExtras = extras.map(extra =>
+      extra.id === id ? { ...extra, quantity: extra.quantity + 1 } : extra,
+    );
+
+    setExtras(newExtras);
   }
 
   function handleDecrementExtra(id: number): void {
-    // Decrement extra quantity
+    const newExtras = extras.map(extra =>
+      extra.id === id ? { ...extra, quantity: extra.quantity - 1 } : extra,
+    );
+
+    setExtras(newExtras);
   }
 
   function handleIncrementFood(): void {
-    // Increment food quantity
+    setFoodQuantity(foodQuantity + 1);
   }
 
   function handleDecrementFood(): void {
-    // Decrement food quantity
+    if (foodQuantity > 1) {
+      setFoodQuantity(foodQuantity - 1);
+    }
   }
 
   const toggleFavorite = useCallback(() => {
     // Toggle if food is favorite or not
+    // const favoritesArray = [];
+    // if (isFavorite) {
+    //   const favoriteIndex = favoritesArray.findIndex((id: number) => {
+    //     return id === food.id;
+    //   });
+    //   favoritesArray.splice(favoriteIndex, 1);
+    //   setIsFavorite(false);
+    // } else {
+    //   favoritesArray.push(food.id);
+    //   setIsFavorite(true);
+    // }
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {

@@ -55,7 +55,9 @@ interface Food {
   name: string;
   description: string;
   price: number;
+  category: number;
   image_url: string;
+  thumbnail_url: string;
   formattedPrice: string;
   favorite: boolean;
   extras: Extra[];
@@ -74,15 +76,27 @@ const FoodDetails: React.FC = () => {
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
-      const response = await api.get(`foods/${routeParams.id}`);
+      const response = await api.get<Food>(`foods/${routeParams.id}`);
 
-      setFood(response.data);
+      const foodFormatted = {
+        ...response.data,
+        formattedPrice: formatValue(response.data.price),
+      };
 
-      setExtras(response.data.extras);
+      setFood(foodFormatted);
+
+      const newExtra = response.data.extras.map(
+        (extra: Omit<Extra, 'quantity'>) => ({
+          ...extra,
+          quantity: 0,
+        }),
+      );
+
+      setExtras(newExtra);
     }
 
     loadFood();
-  }, [routeParams]);
+  }, [routeParams, foodQuantity, isFavorite]);
 
   function handleIncrementExtra(id: number): void {
     const newExtras = extras.map(extra =>
@@ -94,7 +108,9 @@ const FoodDetails: React.FC = () => {
 
   function handleDecrementExtra(id: number): void {
     const newExtras = extras.map(extra =>
-      extra.id === id ? { ...extra, quantity: extra.quantity - 1 } : extra,
+      extra.id === id && extra.quantity > 0
+        ? { ...extra, quantity: extra.quantity - 1 }
+        : extra,
     );
 
     setExtras(newExtras);
@@ -110,37 +126,60 @@ const FoodDetails: React.FC = () => {
     }
   }
 
-  const toggleFavorite = useCallback(() => {
-    // Toggle if food is favorite or not
-    // const favoritesArray = [];
-    // if (isFavorite) {
-    //   const favoriteIndex = favoritesArray.findIndex((id: number) => {
-    //     return id === food.id;
-    //   });
-    //   favoritesArray.splice(favoriteIndex, 1);
-    //   setIsFavorite(false);
-    // } else {
-    //   favoritesArray.push(food.id);
-    //   setIsFavorite(true);
-    // }
+  const toggleFavorite = useCallback(async () => {
+    if (isFavorite) {
+      await api.delete(`favorites/${food.id}`);
+    } else {
+      await api.post('/favorites', food);
+    }
+
+    setIsFavorite(!isFavorite);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
-    // Calculate cartTotal
+    if (!extras || !food) {
+      return '';
+    }
+
+    const totalExtra = extras.reduce((accumulator, extra) => {
+      const extraTotal = extra.value * extra.quantity;
+
+      return accumulator + extraTotal;
+    }, 0);
+
+    const totalFood = food.price * foodQuantity;
+
+    const total = totalFood + totalExtra;
+
+    return formatValue(total);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
-    // Finish the order and save on the API
+    try {
+      const { id, name, price, description, category, image_url } = food;
+
+      await api.post('/orders', {
+        product_id: id,
+        name,
+        description,
+        price,
+        category,
+        thumbnail_url: image_url,
+        extras: { extras },
+      });
+
+      navigation.goBack();
+    } catch (err) {
+      console.log(err);
+    }
   }
 
-  // Calculate the correct icon name
   const favoriteIconName = useMemo(
     () => (isFavorite ? 'favorite' : 'favorite-border'),
     [isFavorite],
   );
 
   useLayoutEffect(() => {
-    // Add the favorite icon on the right of the header bar
     navigation.setOptions({
       headerRight: () => (
         <MaterialIcon

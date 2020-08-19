@@ -96,7 +96,7 @@ const FoodDetails: React.FC = () => {
     }
 
     loadFood();
-  }, [routeParams, foodQuantity, isFavorite]);
+  }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
     const newExtras = extras.map(extra =>

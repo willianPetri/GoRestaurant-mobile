@@ -1,13 +1,13 @@
 import styled from 'styled-components/native';
 import { FlatList } from 'react-native';
 
-interface Product {
+interface Food {
   id: number;
   name: string;
   description: string;
   price: number;
-  formattedValue: number;
   thumbnail_url: string;
+  formattedPrice: string;
 }
 
 export const Container = styled.View`
@@ -37,7 +37,7 @@ export const FoodsContainer = styled.View`
   margin-top: -60px;
 `;
 
-export const FoodList = styled(FlatList as new () => FlatList<Product>)`
+export const FoodList = styled(FlatList as new () => FlatList<Food>)`
   flex: 1;
   padding: 0 20px;
 

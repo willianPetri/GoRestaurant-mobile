@@ -81,6 +81,7 @@ const FoodDetails: React.FC = () => {
       const foodFormatted = {
         ...response.data,
         formattedPrice: formatValue(response.data.price),
+        favorite: isFavorite,
       };
 
       setFood(foodFormatted);
@@ -96,7 +97,7 @@ const FoodDetails: React.FC = () => {
     }
 
     loadFood();
-  }, [routeParams]);
+  }, [routeParams, isFavorite]);
 
   function handleIncrementExtra(id: number): void {
     const newExtras = extras.map(extra =>
@@ -127,10 +128,20 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(async () => {
-    if (isFavorite) {
-      await api.delete(`favorites/${food.id}`);
+    if (food.favorite) {
+      try {
+        await api.delete(`favorites/${food.id}`);
+        setFood({ ...food, favorite: false });
+      } catch (err) {
+        console.log(err);
+      }
     } else {
-      await api.post('/favorites', food);
+      try {
+        await api.post('/favorites', { ...food, favorite: true });
+        setFood({ ...food, favorite: true });
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     setIsFavorite(!isFavorite);

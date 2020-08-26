@@ -3,7 +3,7 @@
 </h1>
 
 <h1 align="center">
-  <img src="./github/goRestaurantMobile.gif">
+  <img src="./.github/goRestaurantMobile.gif">
 </h1>
 
 ---
